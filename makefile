@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -ansi -pedantic -Iincludes 
 DEP = text.h
-	
+
 all: text
 
 text: text.c
