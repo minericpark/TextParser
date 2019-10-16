@@ -13,7 +13,7 @@ int main() {
 
     FILE *fp;
 
-    if ((fp = fopen("1342-0.txt", "r+")) == NULL) {
+    if ((fp = fopen("test.txt", "r+")) == NULL) {
         printf ("File could not be opened");
     }
     txt2words(fp);
@@ -21,6 +21,39 @@ int main() {
 
     return 0;
 }
+
+int isTypeOne (char checkSymbol) { /*String of char, num, -, '*/
+    char *quote = "'";
+
+    if (isdigit(checkSymbol) != 0 || isalpha(checkSymbol) != 0 || checkSymbol == '-' || checkSymbol == *quote) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+int isTypeTwo (char checkSymbol) { /*String of symbols*/
+
+    if (isdigit(checkSymbol) == 0 && isalpha(checkSymbol) == 0) {
+        if (checkSymbol != '-' && checkSymbol != ',' && checkSymbol != ' ') {
+            return 1;
+        }
+        return 0;
+    }
+    else {
+        return 0;
+    }
+}
+
+void print_list (struct node_struct *head) {
+
+    while (head->next) {
+        printf ("%s\n", head->data);
+        head = head->next;
+    }
+
+};
 
 /*Split words and malloc for each, then place into linked list*/
 /*Word is: continuous sequence of characters, numbers, single-hyphens, single apostrophes*/
@@ -32,72 +65,95 @@ int main() {
  * node of linked list*/
 struct node_struct *txt2words (FILE *fp) {
 
-    printf ("Running txt2words function");
+    printf ("Running txt2words function\n");
+    struct node_struct *head, **ptr;
     char tempLine[256] = " ";
     char tempWord[265] = " ";
-    char temp = ' ';
+    char tempSym = ' ';
     int wordSize = 0;
     int i = 0;
 
+    ptr = &head;
     while (fgets (tempLine, 256, fp) != NULL) {
-        memset(tempWord, 0, sizeof(tempWord));
-        printf ("%s", tempLine);
-        /*Read line, detect character then second char if it is word, then store into data, then prep the next struct */
-        /*Check first character if its a digit, alphabetical character, hyphen or apostrophe*/
-        if (isdigit(tempLine[0]) != 0 || isalpha(tempLine[0]) != 0) {
-            /**/
-            tempWord[0] = tempLine[0];
-            for (i = 1; i < strlen(tempLine); i++) {
-                if ((isdigit(tempLine[i]) == 0 && isalpha(tempLine[i]) == 0) || (tempLine[i] == '-' && tempLine[i+1] == '-') || tempLine[i] == '"') { /*Next char is not a digit nor alpha, or its is a double hyphen, or a double apostrophe*/
-                    /*Stop loop*/
-                    break;
+        printf("%s\n", tempLine);
+
+        for (i = 0; i < strlen(tempLine); i++) {
+            if (isTypeOne(tempLine[i]) != 0) {
+                if (wordSize > 0) {
+                    if (isTypeOne(tempLine[i-1]) != 1) {
+                        *ptr = malloc( sizeof( struct node_struct ) );
+                        (*ptr)->data = malloc (strlen(tempWord) + 1);
+                        strcpy((*ptr)->data, tempWord);
+                        ptr = &((*ptr)->next);
+                        printf("\n word: %s", tempWord);
+                        printf ("\nwordSize: %d\n", wordSize);
+                        memset(tempWord, 0, strlen(tempWord));
+                        wordSize = 0;
+                    }
+                    else {
+                        wordSize++;
+                    }
                 }
                 else {
-                    tempWord[i] = tempLine[i];
+                    wordSize++;
                 }
-            }
-            printf ("%s\n", tempWord);
-
-        }
-        else if (strcmp (&tempLine[0], "/n") == 0) {
-            /*just store newline*/
-            tempWord[0] = tempLine[0];
-            printf ("%s\n", tempWord);
-        }
-        else {
-            tempWord[0] = tempLine[0];
-            if (isdigit(tempLine[1]) != 0 || isalpha(tempLine[1] != 0)) { /*Is collection of symbols*/
-                for (i = 1; i < strlen(tempLine); i++) {
-                    if (tempLine[0] != tempLine[i]) { /*Symbols match*/
-                        /*Stop loop*/
-                        break;
+                tempWord[wordSize] = tempLine[i];
+            } else if (isTypeTwo(tempLine[i]) != 0) {
+                if (wordSize > 0) {
+                    if (isTypeTwo(tempLine[i-1]) != 1 || tempLine[i-1] != tempLine[i]) {
+                        *ptr = malloc( sizeof( struct node_struct ) );
+                        (*ptr)->data = malloc (strlen(tempWord) + 1);
+                        strcpy((*ptr)->data, tempWord);
+                        ptr = &((*ptr)->next);
+                        printf("\n word: %s", tempWord);
+                        printf ("\nwordSize: %d\n", wordSize);
+                        memset(tempWord, 0, strlen(tempWord));
+                        wordSize = 0;
                     }
                     else {
-                        tempWord[i] = tempLine[i];
+                        wordSize++;
                     }
                 }
-            }
-            else { /*This is type 1 word e.g. regular word*/
-                for (i = 1; i < strlen(tempLine); i++) {
-                    if ((isdigit(tempLine[i]) == 0 && isalpha(tempLine[i]) == 0) || (tempLine[i] == '-' && tempLine[i+1] == '-') || tempLine[i] == '"') { /*Next char is not a digit nor alpha, or its is a double hyphen, or a double apostrophe*/
-                        /*Stop loop*/
-                        break;
-                    }
-                    else {
-                        tempWord[i] = tempLine[i];
-                    }
+                else {
+                    wordSize++;
                 }
+                tempWord[wordSize] = tempLine[i];
+            } else if (strcmp(tempLine,"\n") != 0){ /*Newline*/
+                *ptr = malloc( sizeof( struct node_struct ) );
+                (*ptr)->data = malloc (strlen(tempWord) + 1);
+                strcpy((*ptr)->data, tempWord);
+                ptr = &((*ptr)->next);
+                printf("\n word: %s", tempWord);
+                printf ("\nwordSize: %d\n", wordSize);
+                memset(tempWord, 0, strlen(tempWord));
+                wordSize = 0;
+                tempWord[wordSize] = tempLine[i];
             }
-            printf ("%s\n", tempWord);
+            else {
+                *ptr = malloc( sizeof( struct node_struct ) );
+                (*ptr)->data = malloc (strlen(tempWord) + 1);
+                strcpy((*ptr)->data, tempWord);
+                ptr = &((*ptr)->next);
+                printf("\n word: %s", tempWord);
+                printf ("\nwordSize: %d\n", wordSize);
+                memset(tempWord, 0, strlen(tempWord));
+                wordSize = 0;
+                tempWord[wordSize] = tempLine[i];
+            }
         }
-        /*If first char is char or num, type 1
-         * If first char is newline, type3
-         * If something else, type 2 (symbol repeated)
-         * Else type 1*/
     }
+    printf("\n word: %s", tempWord);
+    printf ("\nwordSize: %d\n", wordSize);
+    memset(tempWord, 0, strlen(tempWord));
+    wordSize = 0;
+    *ptr = NULL;
 
-    return /*firstnode*/;
+    print_list(head);
+
+    return head;
 }
+
+/*
 
 struct node_struct *search (struct node_struct *list, char *target, int (*compar)(const void *, const void *)) {
 
@@ -127,4 +183,4 @@ int length (struct node_struct *list) {
 void free_list (struct node_struct *list, int free_data) {
 
 
-}
+}*/
