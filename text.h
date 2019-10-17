@@ -1,6 +1,7 @@
 /*  Eric Minseo Park
     1001018
     epark03@uoguelph.ca   */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,3 +18,7 @@ struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, 
 void remove_repeats (struct node_struct *list, int (*compar)(const void *, const void *));
 int length (struct node_struct *list);
 void free_list (struct node_struct *list, int free_data);
+
+int isTypeOne (char checkSymbol);
+int isTypeTwo (char checkSymbol);
+void print_list (struct node_struct *head);
