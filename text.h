@@ -21,4 +21,5 @@ void free_list (struct node_struct *list, int free_data);
 
 int isTypeOne (char checkSymbol);
 int isTypeTwo (char checkSymbol);
-void print_list (struct node_struct *head);
+void print_list (struct node_struct *head, int type);
+int strcmpvoid (const void *a, const void *b);
