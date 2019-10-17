@@ -13,7 +13,7 @@ int main() {
     FILE *fp;
     struct node_struct *head;
 
-    if ((fp = fopen("1342-0.txt", "r+")) == NULL) {
+    if ((fp = fopen("test.txt", "r+")) == NULL) {
         printf ("File could not be opened");
     }
     head = txt2words(fp);
@@ -129,6 +129,20 @@ struct node_struct *txt2words (FILE *fp) {
     while (fgets (tempLine, sizeof(tempLine), fp) != NULL) { /*Run through entire text of given file*/
 
         /*printf ("%s", tempLine);*/
+        /*printf ("%d\n", strlen(tempLine));*/
+        if (tempLine[1] == '\n' && strlen(tempLine) == 2) { /*Checks if line is newline only, stores and reset string + wordSize*/
+            /*printf ("newline detected");*/
+            wordSize = 1;
+            tempWord[0] = tempLine[0];
+            *ptr = malloc( sizeof( struct node_struct ) );
+            (*ptr)->data = malloc (strlen(tempWord) + 1);
+            strcpy((*ptr)->data, tempWord);
+            ptr = &((*ptr)->next);
+            /*printf("\nword: %s", tempWord);
+            printf ("\nwordSize: %d\n", wordSize);*/
+            memset(tempWord, 0, strlen(tempWord));
+            wordSize = 0;
+        }
         for (i = 0; i < strlen(tempLine); i++) { /*Check entire for loop*/
             if (isTypeOne(tempLine[i]) != 0) { /*Checks if char at i is of type one (defined at function)*/
                 /*printf ("\ndetected alph, word at %d", wordSize);*/
@@ -181,6 +195,11 @@ struct node_struct *txt2words (FILE *fp) {
                 }
                 tempWord[wordSize - 1] = tempLine[i]; /*Store char into temp string*/
             }
+            else if (tempLine[i] == '\n') { /*If this is a newline, reset string*/
+                /*printf ("detected newline");*/
+                memset(tempWord, 0, strlen(tempWord));
+                wordSize = 0;
+            }
             else { /*If this is a space, store and reset string*/
                 /*printf ("\ndetected space, word at %d", wordSize);*/
                 *ptr = malloc( sizeof( struct node_struct ) );
@@ -230,6 +249,12 @@ void free_list (struct node_struct *list, int free_data) {
 
     if (free_data != 0) { /*Checks if free_data is 0 or not*/
         /*Free data*/
+        while (list != NULL) {
+            temp = list;
+            list = list->next;
+            free(temp->data);
+            free(temp);
+        }
     }
     else { /*If free data is 0, free only the nodes*/
         while (list != NULL) {
