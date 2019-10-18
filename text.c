@@ -13,7 +13,7 @@ int main() {
     FILE *fp;
     struct node_struct *head, *sHead, *test1, *test2, *cHead, *test3;
 
-    if ((fp = fopen("1342-0.txt", "r+")) == NULL) {
+    if ((fp = fopen("test.txt", "r+")) == NULL) {
         printf ("File could not be opened");
     }
     printf ("\ntxt2words test:\n");
@@ -21,7 +21,7 @@ int main() {
     printf ("%d\n", length(head));
     /*print_list(head, 0);*/
     printf ("\nsearch test:\n");
-    sHead = search(head, "Chapter", strcmpvoid);
+    sHead = search(head, "chapter", strcmpvoid);
     printf ("%d\n", length(sHead));
     /*print_list(sHead, 1);*/
     test1 = sHead->data;
@@ -36,7 +36,7 @@ int main() {
     /*test3 = cHead->data;
     printf ("%s\n", (char*)(test3->data));
     printf ("%p\n", (void*)(test3));*/
-    /*print_list(cHead, 1);*/
+    /*print_list(cHead, 0);*/
     free_list(head, 1);
     free_list(sHead, 0);
     free_list(cHead, 0);
@@ -274,7 +274,7 @@ struct node_struct *copy (struct node_struct *start, struct node_struct *end) {
         printf ("%s\n", (char *)(temp->data));*/
         *ptr = malloc (sizeof(struct node_struct));
         (*ptr)->data = malloc (sizeof(struct node_struct));
-        (*ptr)->data = &(*temp);
+        (*ptr)->data = &(*temp->data);
         ptr = &((*ptr)->next);
         temp = temp->next;
     }
