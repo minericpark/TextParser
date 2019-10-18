@@ -19,17 +19,20 @@ int main() {
     printf ("\ntxt2words test:\n");
     head = txt2words(fp);
     printf ("%d\n", length(head));
-    /*print_list(head, 0);*/
-    printf ("\nsearch test:\n");
+    print_list(head, 0);
+    remove_repeats(head, strcmpvoid);
+    printf ("\nremove_repeat test:\n");
+    print_list(head, 0);
+    printf ("\nsearch test:\n");/*
     sHead = search(head, "chapter", strcmpvoid);
     printf ("%d\n", length(sHead));
-    /*print_list(sHead, 1);*/
+    /*print_list(sHead, 1);*//*
     test1 = sHead->data;
     /*printf ("%s\n", (char*)(test1->data));
-    printf ("%p\n", (void*)(test1));*/
+    printf ("%p\n", (void*)(test1));*//*
     test2 = ((struct node_struct *) (sHead->next))->data;
     /*printf ("%s\n", (char*)(test2->data));
-    printf ("%p\n", (void*)(test2));*/
+    printf ("%p\n", (void*)(test2));*//*
     printf ("\ncopy test:\n");
     cHead = copy (test1, test2);
     printf ("%d\n", length(cHead));
@@ -37,9 +40,9 @@ int main() {
     printf ("%s\n", (char*)(test3->data));
     printf ("%p\n", (void*)(test3));*/
     /*print_list(cHead, 0);*/
-    free_list(head, 1);
+    free_list(head, 1);/*
     free_list(sHead, 0);
-    free_list(cHead, 0);
+    free_list(cHead, 0);*/
     fclose(fp);
 
     return 0;
@@ -97,10 +100,10 @@ int strcmpvoid (const void *a, const void *b) {
     ptr_b = (char*)b;
 
     if (strcmp(ptr_a, ptr_b) == 0) {
-        return 1;
+        return 0;
     }
     else {
-        return 0;
+        return 1;
     }
 }
 
@@ -232,7 +235,7 @@ struct node_struct *txt2words (FILE *fp) {
 }
 
 /*Function searches through linked list list to find target with a compar function provided. Returns a
- * pointer to the head of the new linked list composed of the nodes to the found targets*/
+ * pointer to the head of the new linked list composed of the address of nodes to the found targets*/
 struct node_struct *search (struct node_struct *list, char *target, int (*compar)(const void *, const void *)) {
     struct node_struct *temp = list;
     struct node_struct **ptr, *head;
@@ -240,7 +243,7 @@ struct node_struct *search (struct node_struct *list, char *target, int (*compar
     ptr = &head;
     while (temp != NULL) { /*Run through entire list given*/
         /*Compare value to of data to target*/
-        if (compar (target, temp->data) == 1) {
+        if (compar (target, temp->data) == 0) {
             /*Then found*/
             /*printf ("found\n");
             printf ("%p\n", (void *)(temp));*/
@@ -257,6 +260,9 @@ struct node_struct *search (struct node_struct *list, char *target, int (*compar
     return head;
 }
 
+/*Function takes in node start and end, and scans from start up to end. Then creates a linked
+ * list composed of address of data pointers of all words between start and just before end,
+ * and returns it. */
 struct node_struct *copy (struct node_struct *start, struct node_struct *end) {
 
     struct node_struct *temp = start; /*Assign start to temp*/
@@ -274,7 +280,7 @@ struct node_struct *copy (struct node_struct *start, struct node_struct *end) {
         printf ("%s\n", (char *)(temp->data));*/
         *ptr = malloc (sizeof(struct node_struct));
         (*ptr)->data = malloc (sizeof(struct node_struct));
-        (*ptr)->data = &(*temp->data);
+        (*ptr)->data = &(*temp->data); /*Copy data pointer*/
         ptr = &((*ptr)->next);
         temp = temp->next;
     }
@@ -283,6 +289,38 @@ struct node_struct *copy (struct node_struct *start, struct node_struct *end) {
     /*printf ("%p\n", (void *)(head));*/
 
     return head;
+}
+
+void remove_repeats (struct node_struct *list, int (*compar)(const void *, const void *)) {
+
+    struct node_struct *current, *search, *temp, *prev, *next;
+    current = list;
+    search = list->next;
+
+    while (current != NULL) {
+        while (search != NULL) {
+            printf ("%s vs %s \n", current->data, search->data);
+            if (compar(current->data, search->data) == 0) {
+                temp = search->next;
+                if (search->next == NULL) {
+                    prev->next = NULL;
+                    free(search->data);
+                    free(search);
+                }
+                else {
+                    printf ("found\n");
+                    next = temp->next;
+                    search->next = next->next;
+                    free(search->data);
+                    free(search);
+                }
+            }
+            prev = search;
+            search = search->next;
+        }
+        current = current->next;
+        search = current->next;
+    }
 }
 
 /*Function follows through entire linked list provided by list and increments a counter:
@@ -302,13 +340,15 @@ int length (struct node_struct *list) {
 /*Function frees the linked list provided by list: only nodes if free_data is equal
  * to 0, or everything (including data) if free_data is equal to anything elsewise */
 void free_list (struct node_struct *list, int free_data) {
-    struct node_struct *temp;
+    struct node_struct *temp, *temp2;
 
     if (free_data != 0) { /*Checks if free_data is 0 or not*/
         /*Free data*/
         while (list != NULL) {
             temp = list;
+            temp2 = (struct node_struct *)temp->data;
             list = list->next;
+            free(temp2);
             free(temp->data);
             free(temp);
         }
@@ -317,6 +357,7 @@ void free_list (struct node_struct *list, int free_data) {
         while (list != NULL) {
             temp = list;
             list = list->next;
+            free(temp->data);
             free(temp);
         }
     }
@@ -329,10 +370,6 @@ void ftext (FILE *fp, struct node_struct *list) {
 }
 
 struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, const void *)) {
-
-}
-
-void remove_repeats (struct node_struct *list, int (*compar)(const void *, const void *)) {
 
 }
 */
