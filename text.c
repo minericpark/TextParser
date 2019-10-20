@@ -10,16 +10,21 @@
 
 int main() {
 
-    FILE *fp;
+    FILE *fp, *fp2;
     struct node_struct *head, *sHead, *test1, *test2, *cHead, *test3;
 
     if ((fp = fopen("test.txt", "r+")) == NULL) {
+        printf ("File could not be opened");
+    }
+    if ((fp2 = fopen("ftext.txt", "w+")) == NULL) {
         printf ("File could not be opened");
     }
     printf ("\ntxt2words test:\n");
     head = txt2words(fp);
     printf ("%d\n", length(head));
     print_list(head, 0);
+    ftext(fp2, head);
+    /*
     remove_repeats(head, strcmpvoid);
     printf ("\nremove_repeat test:\n");
     print_list(head, 0);/*
@@ -289,6 +294,9 @@ struct node_struct *copy (struct node_struct *start, struct node_struct *end) {
     return head;
 }
 
+/*Function seeks all repeated words within list, uses compar function to determine if same or not,
+ * and removes the words repeated after the first instance by modifying the linked list and freeing
+ * the necessary nodes.*/
 void remove_repeats (struct node_struct *list, int (*compar)(const void *, const void *)) {
 
     struct node_struct *current, *search, *temp, *prev, *next;
@@ -298,19 +306,21 @@ void remove_repeats (struct node_struct *list, int (*compar)(const void *, const
     while (current != NULL) {
         while (search != NULL) {
             printf ("%s vs %s \n", current->data, search->data);
+            printf ("%p vs %p \n", (void *)(current), (void *)(search));
+            printf ("Previous: %p\n", (void *)(prev));
             if (compar(current->data, search->data) == 0) {
                 temp = search->next;
+                printf ("found\n");
                 if (search->next == NULL) {
+                    printf ("end\n");
                     prev->next = NULL;
-                    free(search->data);
                     free(search);
                 }
                 else {
-                    printf ("found\n");
-                    next = temp->next;
-                    search->next = next->next;
-                    free(search->data);
+                    printf ("mid\n");
+                    prev->next = temp->next;
                     free(search);
+                    printf ("stored");
                 }
             }
             prev = search;
@@ -319,6 +329,16 @@ void remove_repeats (struct node_struct *list, int (*compar)(const void *, const
         current = current->next;
         search = current->next;
     }
+}
+
+/*Function writes into file pointer fp all words within provided linked list appropriately.*/
+void ftext (FILE *fp, struct node_struct *list) {
+
+    while (list != NULL) {
+        fprintf (fp, "%s\n", (char *) list->data);
+        list = list->next;
+    }
+
 }
 
 /*Function follows through entire linked list provided by list and increments a counter:
@@ -359,10 +379,6 @@ void free_list (struct node_struct *list, int free_data) {
 }
 
 /*
-
-void ftext (FILE *fp, struct node_struct *list) {
-
-}
 
 struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, const void *)) {
 
