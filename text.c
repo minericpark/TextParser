@@ -22,8 +22,8 @@ int main() {
     print_list(head, 0);
     remove_repeats(head, strcmpvoid);
     printf ("\nremove_repeat test:\n");
-    print_list(head, 0);
-    printf ("\nsearch test:\n");/*
+    print_list(head, 0);/*
+    printf ("\nsearch test:\n");
     sHead = search(head, "chapter", strcmpvoid);
     printf ("%d\n", length(sHead));
     /*print_list(sHead, 1);*//*
@@ -248,7 +248,6 @@ struct node_struct *search (struct node_struct *list, char *target, int (*compar
             /*printf ("found\n");
             printf ("%p\n", (void *)(temp));*/
             *ptr = malloc (sizeof(struct node_struct));
-            (*ptr)->data = malloc (sizeof(struct node_struct));
             (*ptr)->data = &(*temp);
             ptr = &((*ptr)->next);
         }
@@ -279,7 +278,6 @@ struct node_struct *copy (struct node_struct *start, struct node_struct *end) {
         /*printf ("%p\n", (void *)(temp));
         printf ("%s\n", (char *)(temp->data));*/
         *ptr = malloc (sizeof(struct node_struct));
-        (*ptr)->data = malloc (sizeof(struct node_struct));
         (*ptr)->data = &(*temp->data); /*Copy data pointer*/
         ptr = &((*ptr)->next);
         temp = temp->next;
@@ -346,9 +344,7 @@ void free_list (struct node_struct *list, int free_data) {
         /*Free data*/
         while (list != NULL) {
             temp = list;
-            temp2 = (struct node_struct *)temp->data;
             list = list->next;
-            free(temp2);
             free(temp->data);
             free(temp);
         }
@@ -357,7 +353,6 @@ void free_list (struct node_struct *list, int free_data) {
         while (list != NULL) {
             temp = list;
             list = list->next;
-            free(temp->data);
             free(temp);
         }
     }
