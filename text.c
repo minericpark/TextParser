@@ -334,6 +334,9 @@ void remove_repeats (struct node_struct *list, int (*compar)(const void *, const
 /*Function writes into file pointer fp all words within provided linked list appropriately.*/
 void ftext (FILE *fp, struct node_struct *list) {
 
+    /*If word is , or ; or ! or " or ., if next word not " or --, add space*/
+    /*Add space between word that ends with letter/number and another word that ends with letter/number*/
+    /*Each line has at most 80 chars (excluding newline), insert newline before 80 count is hit*/
     while (list != NULL) {
         fprintf (fp, "%s\n", (char *) list->data);
         list = list->next;
