@@ -334,13 +334,61 @@ void remove_repeats (struct node_struct *list, int (*compar)(const void *, const
 /*Function writes into file pointer fp all words within provided linked list appropriately.*/
 void ftext (FILE *fp, struct node_struct *list) {
 
+    struct node_struct *next = list->next;
+    int lineLength = 0;
+    char tempLine[150] = "";
+    char *tempWord = "";
+    char *tempNext = "";
+    int firstWord = 1;
+    int spaceBool = 0;
     /*If word is , or ; or ! or " or ., if next word not " or --, add space*/
     /*Add space between word that ends with letter/number and another word that ends with letter/number*/
     /*Each line has at most 80 chars (excluding newline), insert newline before 80 count is hit*/
+    /*Record strlen of line (add onto each) if hits over 80, print in the current line and then set new one*/
     while (list != NULL) {
-        fprintf (fp, "%s\n", (char *) list->data);
+        printf ("length: %d\n", lineLength);
+        tempWord = list->data;
+        lineLength += strlen(tempWord);
+        printf ("%s\n", tempWord);
+        if (next != NULL) {
+            tempNext = next->data;
+        }
+        if (lineLength > 80 || strcmp (tempWord, "\r") == 0) {
+            /*printf ("finish line\n");*/
+            fprintf (fp, "%s\n", tempLine);
+            lineLength  = 0;
+            memset(tempLine, 0, strlen(tempLine));
+        }
+        else {
+            /*printf ("continue recording\n");*/
+            if (firstWord != 1 && next != NULL) {
+                /*printf ("not first word %d\n", lineLength);*/
+                if ((strcmp (tempWord, ",") == 0 || strcmp(tempWord, ";") == 0 || strcmp (tempWord, ".") == 0 ||
+                    strcmp (tempWord, "\"") == 0) && ((strcmp (next->data, "\"") != 0) || (strcmp (next->data, "--") != 0))) {
+                    /*printf ("space required\n");*/
+                    spaceBool = 1;
+                }
+                else if ((isalpha(tempWord[0]) != 0 || isdigit(tempWord[0]) != 0) && (isalpha(tempNext[0]) != 0 || isdigit(tempNext[0]) != 0)) {
+                    spaceBool = 1;
+                }
+            }
+            strcat (tempLine, (char *) list->data);
+            if (spaceBool == 1) {
+                strcat (tempLine, " ");
+                lineLength++;
+            }
+        }
+        firstWord = 0;
+        spaceBool = 0;
+        memset (tempWord, 0, strlen(tempWord));
         list = list->next;
+        /*printf ("next:%p\n", (void *) list);*/
+        if (next != NULL) {
+            next = list->next;
+            /*printf ("nextofnext:%p\n", (void *) next);*/
+        }
     }
+    fprintf (fp, "%s\n", tempLine);
 
 }
 
