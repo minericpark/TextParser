@@ -11,7 +11,7 @@
 int main() {
 
     FILE *fp, *fp2;
-    struct node_struct *head, *sHead, *test1, *test2, *cHead, *test3;
+    struct node_struct *head, *sHead, *test1, *test2, *cHead, *test3, *sortHead;
 
     if ((fp = fopen("test.txt", "r+")) == NULL) {
         printf ("File could not be opened");
@@ -23,7 +23,10 @@ int main() {
     head = txt2words(fp);
     printf ("%d\n", length(head));
     print_list(head, 0);
+    printf ("\nftext test:\n");
     ftext(fp2, head);
+    printf ("\nsort test:\n");
+    sortHead = sort(head, strcmpsort);
     /*
     remove_repeats(head, strcmpvoid);
     printf ("\nremove_repeat test:\n");
@@ -111,6 +114,17 @@ int strcmpvoid (const void *a, const void *b) {
         return 1;
     }
 }
+
+int strcmpsort (const void *a, const void *b) {
+
+    char *ptr_a, *ptr_b;
+
+    ptr_a = (char*) a;
+    ptr_b = (char*) b;
+
+    return (strcmp(ptr_a, ptr_b));
+}
+
 
 /*Split words and malloc for each, then place into linked list*/
 /*Word is: continuous sequence of characters, numbers, single-hyphens, single apostrophes*/
@@ -227,8 +241,8 @@ struct node_struct *txt2words (FILE *fp) {
     (*ptr)->data = malloc (strlen(tempWord) + 1);
     strcpy((*ptr)->data, tempWord);
     ptr = &((*ptr)->next);
-    printf ("%p\n", (void *)(ptr));
-    /*printf("\nword: %s", tempWord);
+    /*printf ("%p\n", (void *)(ptr));
+    printf("\nword: %s", tempWord);
     printf ("\nwordSize: %d\n", wordSize);*/
     memset(tempWord, 0, strlen(tempWord));
     /*printf ("%p\n", (void *)(ptr));*/
@@ -331,6 +345,61 @@ void remove_repeats (struct node_struct *list, int (*compar)(const void *, const
     }
 }
 
+/*Function sorts entire list in orderly fashion through merge sort algorithm*/
+struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, const void *)) {
+
+    struct node_struct *temp = list;
+    int listLength = length(list);
+    int i = 0;
+    char* listArray[listLength];
+    struct node_struct **ptr, *head, *firstHalf, *secondHalf;
+
+    if (list == NULL || list->next == NULL) {
+        printf ("Linked list either empty or only one node exists.\n");
+    }
+
+    /*Create array from linked list*/
+    while (temp != NULL) {
+        listArray[i] = temp->data;
+        temp = temp->next;
+        i++;
+    }
+    for (i = 0; i < listLength; i++) {
+        printf ("%d: %s\n", i+1, listArray[i]);
+    }
+
+    /*Create list*/
+    ptr = &head;
+    while (temp != NULL) { /*Run through entire list given*/
+        *ptr = malloc (sizeof(struct node_struct));
+        (*ptr)->data = &(*temp->data); /*Copy data pointer*/
+        ptr = &((*ptr)->next);
+        temp = temp->next;
+    }
+    *ptr = NULL;
+
+    return head;
+}
+
+void merge (char* listArray[], int firstOne, int lastOne, int firstTwo, int lastTwo) {
+
+    int i, j, k;
+
+    
+}
+
+void mergeSort (char* listArray[], int first, int last) {
+
+    int middle;
+
+    if (first < last) {
+        middle = (first + last) / 2;
+        mergeSort (listArray, first, middle);
+        mergeSort (listArray, middle + 1, last);
+        merge (listArray, first, middle + 1, middle, last);
+    }
+}
+
 /*Function writes into file pointer fp all words within provided linked list appropriately.*/
 void ftext (FILE *fp, struct node_struct *list) {
 
@@ -346,10 +415,10 @@ void ftext (FILE *fp, struct node_struct *list) {
     /*Each line has at most 80 chars (excluding newline), insert newline before 80 count is hit*/
     /*Record strlen of line (add onto each) if hits over 80, print in the current line and then set new one*/
     while (list != NULL) {
-        printf ("length: %d\n", lineLength);
+        /*printf ("length: %d\n", lineLength);*/
         tempWord = list->data;
         lineLength += strlen(tempWord);
-        printf ("%s\n", tempWord);
+        /*printf ("%s\n", tempWord);*/
         if (next != NULL) {
             tempNext = next->data;
         }
@@ -364,7 +433,7 @@ void ftext (FILE *fp, struct node_struct *list) {
             if (firstWord != 1 && next != NULL) {
                 /*printf ("not first word %d\n", lineLength);*/
                 if ((strcmp (tempWord, ",") == 0 || strcmp(tempWord, ";") == 0 || strcmp (tempWord, ".") == 0 ||
-                    strcmp (tempWord, "\"") == 0) && ((strcmp (next->data, "\"") != 0) || (strcmp (next->data, "--") != 0))) {
+                    strcmp (tempWord, "\"") == 0) && ((strcmp (next->data, "\"") != 0) && (strcmp (next->data, "--") != 0))) {
                     /*printf ("space required\n");*/
                     spaceBool = 1;
                 }
@@ -380,7 +449,7 @@ void ftext (FILE *fp, struct node_struct *list) {
         }
         firstWord = 0;
         spaceBool = 0;
-        memset (tempWord, 0, strlen(tempWord));
+        tempWord = "";
         list = list->next;
         /*printf ("next:%p\n", (void *) list);*/
         if (next != NULL) {
@@ -428,10 +497,3 @@ void free_list (struct node_struct *list, int free_data) {
         }
     }
 }
-
-/*
-
-struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, const void *)) {
-
-}
-*/

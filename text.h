@@ -23,3 +23,4 @@ int isTypeOne (char checkSymbol);
 int isTypeTwo (char checkSymbol);
 void print_list (struct node_struct *head, int type);
 int strcmpvoid (const void *a, const void *b);
+int strcmpsort (const void *a, const void *b);
