@@ -13,7 +13,7 @@ int main() {
     FILE *fp, *fp2;
     struct node_struct *head, *sHead, *test1, *test2, *cHead, *test3, *sortHead;
 
-    if ((fp = fopen("test2.txt", "r+")) == NULL) {
+    if ((fp = fopen("test.txt", "r+")) == NULL) {
         printf ("File could not be opened");
     }
     if ((fp2 = fopen("ftext.txt", "w+")) == NULL) {
@@ -22,13 +22,13 @@ int main() {
     printf ("\ntxt2words test:\n");
     head = txt2words(fp);
     printf ("%d\n", length(head));
-    print_list(head, 0);
+    print_list(head, 0); /*
     printf ("\nftext test:\n");
-    ftext(fp2, head);
+    ftext(fp2, head);/*
     printf ("\nsort test:\n");
     sortHead = sort(head, strcmpsort);
-    print_list(sortHead, 0);
-    /*
+    print_list(sortHead, 0);*/
+
     remove_repeats(head, strcmpvoid);
     printf ("\nremove_repeat test:\n");
     print_list(head, 0);/*
@@ -314,9 +314,10 @@ struct node_struct *copy (struct node_struct *start, struct node_struct *end) {
  * the necessary nodes.*/
 void remove_repeats (struct node_struct *list, int (*compar)(const void *, const void *)) {
 
-    struct node_struct *current, *search, *temp, *prev, *next;
+    struct node_struct *current, *search, *temp, *temp2, *prev, *next;
     current = list;
     search = list->next;
+    prev = list;
 
     while (current != NULL) {
         while (search != NULL) {
@@ -324,29 +325,36 @@ void remove_repeats (struct node_struct *list, int (*compar)(const void *, const
             printf ("%p vs %p \n", (void *)(current), (void *)(search));
             printf ("Previous: %p\n", (void *)(prev));
             if (compar(current->data, search->data) == 0) {
-                temp = search->next;
                 printf ("found\n");
                 if (search->next == NULL) {
                     printf ("end\n");
                     prev->next = NULL;
-                    free(search);
                 }
                 else {
                     printf ("mid\n");
-                    prev->next = temp->next;
-                    free(search);
-                    printf ("stored");
+                    prev->next = search->next;
+                    printf ("stored\n");
                 }
+                temp2 = search->next;
+                free(search);
             }
-            prev = search;
-            search = search->next;
+            else {
+                temp = search;
+                temp2 = search->next;
+            }
+            prev = temp;
+            search = temp2;
+            printf ("previous stored\n");
         }
-        current = current->next;
-        search = current->next;
+        if (current->next != NULL) {
+            current = current->next;
+            search = current->next;
+        }
     }
 }
 
-/*Function sorts entire list in orderly fashion through merge sort algorithm*/
+/*Function sorts entire list in orderly fashion through merge sort algorithm using given list,
+ * provided compare function, and several helper functions (e.g. mergeSort and merge)*/
 struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, const void *)) {
 
     struct node_struct *temp = list;
@@ -393,7 +401,7 @@ struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, 
     return head;
 }
 
-/*Merge helper function that organizes and merges arranged lists*/
+/*Merge helper function that organizes and merges arranged lists together. Additionally mallocs required storage*/
 void merge (char **listArray, int first, int middle, int last, int (*compar)(const void *, const void *)) {
 
     int i;
