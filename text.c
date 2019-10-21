@@ -1,63 +1,14 @@
 /*  Eric Minseo Park
     1001018
     epark03@uoguelph.ca   */
-
 #include "text.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 
-int main() {
-
-    FILE *fp, *fp2;
-    struct node_struct *head, *sHead, *test1, *test2, *cHead, *test3, *sortHead;
-
-    if ((fp = fopen("test.txt", "r+")) == NULL) {
-        printf ("File could not be opened");
-    }
-    if ((fp2 = fopen("ftext.txt", "w+")) == NULL) {
-        printf ("File could not be opened");
-    }
-    printf ("\ntxt2words test:\n");
-    head = txt2words(fp);
-    printf ("%d\n", length(head));
-    print_list(head, 0); /*
-    printf ("\nftext test:\n");
-    ftext(fp2, head);/*
-    printf ("\nsort test:\n");
-    sortHead = sort(head, strcmpsort);
-    print_list(sortHead, 0);*/
-
-    remove_repeats(head, strcmpvoid);
-    printf ("\nremove_repeat test:\n");
-    print_list(head, 0);/*
-    printf ("\nsearch test:\n");
-    sHead = search(head, "chapter", strcmpvoid);
-    printf ("%d\n", length(sHead));
-    /*print_list(sHead, 1);*//*
-    test1 = sHead->data;
-    /*printf ("%s\n", (char*)(test1->data));
-    printf ("%p\n", (void*)(test1));*//*
-    test2 = ((struct node_struct *) (sHead->next))->data;
-    /*printf ("%s\n", (char*)(test2->data));
-    printf ("%p\n", (void*)(test2));*//*
-    printf ("\ncopy test:\n");
-    cHead = copy (test1, test2);
-    printf ("%d\n", length(cHead));
-    /*test3 = cHead->data;
-    printf ("%s\n", (char*)(test3->data));
-    printf ("%p\n", (void*)(test3));*/
-    /*print_list(cHead, 0);*/
-    free_list(head, 1);/*
-    free_list(sHead, 0);
-    free_list(cHead, 0);*/
-    fclose(fp);
-
-    return 0;
-}
-
-int isTypeOne (char checkSymbol) { /*Verifies if char is char, num, -, ' : 1 for true, 0 for false*/
+/*Helper function that identifies whether character is type one (char, num, -, ') : 1 for true, 0 for false*/
+int isTypeOne (char checkSymbol) {
     char *quote = "'";
 
     if (isdigit(checkSymbol) != 0 || isalpha(checkSymbol) != 0 || checkSymbol == '-' || checkSymbol == *quote) {
@@ -68,7 +19,8 @@ int isTypeOne (char checkSymbol) { /*Verifies if char is char, num, -, ' : 1 for
     }
 }
 
-int isTypeTwo (char checkSymbol) { /*Verifies if char is symbol excluding some exceptions (e.g. -, ' ', '\n'): 1 for true, 0 for false*/
+/*Helper function that identifies whether character is type two (symbols) excluding some exceptions (e.g. -, ' ', '\n'): 1 for true, 0 for false*/
+int isTypeTwo (char checkSymbol) {
 
     if (isdigit(checkSymbol) == 0 && isalpha(checkSymbol) == 0) {
         if (checkSymbol != '-' && checkSymbol != ' ' && checkSymbol != '\n') {
@@ -116,6 +68,7 @@ int strcmpvoid (const void *a, const void *b) {
     }
 }
 
+/*Function simply casts appropriate types and returns output of strcmp*/
 int strcmpsort (const void *a, const void *b) {
 
     char *ptr_a, *ptr_b;
@@ -127,10 +80,6 @@ int strcmpsort (const void *a, const void *b) {
 }
 
 
-/*Split words and malloc for each, then place into linked list*/
-/*Word is: continuous sequence of characters, numbers, single-hyphens, single apostrophes*/
-/*Any contiguous sequence of identical punctuation symbols or*/
-/*Blank line*/
 /*Function reads text from file pointer one line at a time, split each line into words, allocate
  * a string for each word, storing the address of the string in the data pointer. Assemble
  * words in the original order (first word at head of list) into a linked list. Return pointer to first
@@ -146,48 +95,34 @@ struct node_struct *txt2words (FILE *fp) {
     fseek(fp, 0, SEEK_SET);
     ptr = &head; /*Set pointer to address of head*/
     while (fgets (tempLine, sizeof(tempLine), fp) != NULL) { /*Run through entire text of given file*/
-
-        /*printf ("%s", tempLine);*/
-        /*printf ("%d\n", strlen(tempLine));*/
         if (tempLine[1] == '\n' && strlen(tempLine) == 2) { /*Checks if line is newline only, stores and reset string + wordSize*/
-            /*printf ("newline detected");*/
             wordSize = 1;
             tempWord[0] = tempLine[0];
             *ptr = malloc(sizeof(struct node_struct));
             (*ptr)->data = malloc(strlen(tempWord) + 1);
             strcpy((*ptr)->data, tempWord);
             ptr = &((*ptr)->next);
-            /*printf("\nword: %s", tempWord);
-            printf ("\nwordSize: %d\n", wordSize);*/
             memset(tempWord, 0, strlen(tempWord));
             wordSize = 0;
-            /*printf ("%p\n", (void *)(ptr));*/
         }
         for (i = 0; i < strlen(tempLine); i++) { /*Check entire for loop*/
             if (isTypeOne(tempLine[i]) != 0) { /*Checks if char at i is of type one (defined at function)*/
-                /*printf ("\ndetected alph, word at %d", wordSize);*/
                 if (wordSize > 0) {
                     if (tempLine[i] == '-' && tempLine[i] == tempLine[i+1]) { /*If there exists double hyphen, store and reset temp string*/
                         *ptr = malloc(sizeof(struct node_struct));
                         (*ptr)->data = malloc(strlen(tempWord) + 1);
                         strcpy((*ptr)->data, tempWord);
                         ptr = &((*ptr)->next);
-                        /*printf("\nword: %s", tempWord);
-                        printf ("\nwordSize: %d\n", wordSize);*/
                         memset(tempWord, 0, strlen(tempWord));
                         wordSize = 1;
-                        /*printf ("%p\n", (void *)(ptr));*/
                     }
                     else if (isTypeOne(tempLine[i-1]) != 1) { /*If prior char is a type one char, store and reset string*/
                         *ptr = malloc(sizeof(struct node_struct));
                         (*ptr)->data = malloc(strlen(tempWord) + 1);
                         strcpy((*ptr)->data, tempWord);
                         ptr = &((*ptr)->next);
-                        /*printf("\nword: %s", tempWord);
-                        printf ("\nwordSize: %d\n", wordSize);*/
                         memset(tempWord, 0, strlen(tempWord));
                         wordSize = 1;
-                        /*printf ("%p\n", (void *)(ptr));*/
                     }
                     else { /*Otherwise increment wordsize by one*/
                         wordSize++;
@@ -198,18 +133,14 @@ struct node_struct *txt2words (FILE *fp) {
                 }
                 tempWord[wordSize - 1] = tempLine[i]; /*Store char into temp string*/
             } else if (isTypeTwo(tempLine[i]) != 0) { /*Checks if char at i is of type two (defined at function)*/
-                /*printf ("\ndetected sym, word at %d", wordSize);*/
                 if (wordSize > 0) {
                     if (tempLine[i - 1] != tempLine[i]) { /*Checks if prior char is the same as current char*/
                         *ptr = malloc(sizeof(struct node_struct));
                         (*ptr)->data = malloc(strlen(tempWord) + 1);
                         strcpy((*ptr)->data, tempWord);
                         ptr = &((*ptr)->next);
-                        /*printf("\nword: %s", tempWord);
-                        printf("\nwordSize: %d\n", wordSize);*/
                         memset(tempWord, 0, strlen(tempWord));
                         wordSize = 1;
-                        /*printf ("%p\n", (void *)(ptr));*/
                     } else { /*Otherwise increment wordsize by one*/
                         wordSize++;
                     }
@@ -219,21 +150,16 @@ struct node_struct *txt2words (FILE *fp) {
                 tempWord[wordSize - 1] = tempLine[i]; /*Store char into temp string*/
             }
             else if (tempLine[i] == '\n') { /*If this is a newline, reset string*/
-                /*printf ("detected newline");*/
                 memset(tempWord, 0, strlen(tempWord));
                 wordSize = 0;
             }
             else { /*If this is a space, store and reset string*/
-                /*printf ("\ndetected space, word at %d", wordSize);*/
                 *ptr = malloc(sizeof(struct node_struct));
                 (*ptr)->data = malloc(strlen(tempWord) + 1);
                 strcpy((*ptr)->data, tempWord);
                 ptr = &((*ptr)->next);
-                /*printf("\nword: %s", tempWord);
-                printf ("\nwordSize: %d\n", wordSize);*/
                 memset(tempWord, 0, strlen(tempWord));
                 wordSize = 0;
-                /*printf ("%p\n", (void *)(ptr));*/
             }
         }
     }
@@ -242,13 +168,8 @@ struct node_struct *txt2words (FILE *fp) {
     (*ptr)->data = malloc (strlen(tempWord) + 1);
     strcpy((*ptr)->data, tempWord);
     ptr = &((*ptr)->next);
-    /*printf ("%p\n", (void *)(ptr));
-    printf("\nword: %s", tempWord);
-    printf ("\nwordSize: %d\n", wordSize);*/
     memset(tempWord, 0, strlen(tempWord));
-    /*printf ("%p\n", (void *)(ptr));*/
 
-    /*Figure out why this not working*/
     *ptr = NULL; /*Set final pointer to null*/
 
     return head;
@@ -265,8 +186,6 @@ struct node_struct *search (struct node_struct *list, char *target, int (*compar
         /*Compare value to of data to target*/
         if (compar (target, temp->data) == 0) {
             /*Then found*/
-            /*printf ("found\n");
-            printf ("%p\n", (void *)(temp));*/
             *ptr = malloc (sizeof(struct node_struct));
             (*ptr)->data = &(*temp);
             ptr = &((*ptr)->next);
@@ -274,7 +193,6 @@ struct node_struct *search (struct node_struct *list, char *target, int (*compar
         temp = temp->next;
     }
     *ptr = NULL;
-    /*printf (length(head));*/
 
     return head;
 }
@@ -288,23 +206,17 @@ struct node_struct *copy (struct node_struct *start, struct node_struct *end) {
     struct node_struct **ptr, *head;
 
     ptr = &head;
-    /*printf ("%p\n", (void *)(head));*/
     while (temp != NULL) { /*Run through entire list given*/
         if (temp == end) { /*Determines if temp has reached end, then exits loop*/
             /*Then found*/
-            /*printf ("done\n");*/
             break;
         }
-        /*printf ("%p\n", (void *)(temp));
-        printf ("%s\n", (char *)(temp->data));*/
         *ptr = malloc (sizeof(struct node_struct));
         (*ptr)->data = &(*temp->data); /*Copy data pointer*/
         ptr = &((*ptr)->next);
         temp = temp->next;
     }
     *ptr = NULL;
-
-    /*printf ("%p\n", (void *)(head));*/
 
     return head;
 }
@@ -314,26 +226,19 @@ struct node_struct *copy (struct node_struct *start, struct node_struct *end) {
  * the necessary nodes.*/
 void remove_repeats (struct node_struct *list, int (*compar)(const void *, const void *)) {
 
-    struct node_struct *current, *search, *temp, *temp2, *prev, *next;
+    struct node_struct *current, *search, *temp, *temp2, *prev;
     current = list;
     search = list->next;
     prev = list;
 
     while (current != NULL) {
         while (search != NULL) {
-            printf ("%s vs %s \n", current->data, search->data);
-            printf ("%p vs %p \n", (void *)(current), (void *)(search));
-            printf ("Previous: %p\n", (void *)(prev));
             if (compar(current->data, search->data) == 0) {
-                printf ("found\n");
                 if (search->next == NULL) {
-                    printf ("end\n");
                     prev->next = NULL;
                 }
                 else {
-                    printf ("mid\n");
                     prev->next = search->next;
-                    printf ("stored\n");
                 }
                 temp2 = search->next;
                 free(search);
@@ -344,10 +249,9 @@ void remove_repeats (struct node_struct *list, int (*compar)(const void *, const
             }
             prev = temp;
             search = temp2;
-            printf ("previous stored\n");
         }
-        if (current->next != NULL) {
-            current = current->next;
+        current = current->next;
+        if (current != NULL) {
             search = current->next;
         }
     }
@@ -376,18 +280,9 @@ struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, 
         temp = temp->next;
         i++;
     }
-    /*
-    for (i = 0; i < listLength; i++) {
-        printf ("%d: %s\n", i+1, listArray[i]);
-    }*/
 
-    /*printf ("starting merge\n");*/
     mergeSort(listArray, 0, listLength - 1, strcmpsort);
-    /*
-    for (i = 0; i < listLength; i++) {
-        printf ("%d: %s\n", i+1, listArray[i]);
-    }
-    */
+
     /*Create list*/
     ptr = &head;
     for (i = 0; i < listLength; i++) {
@@ -411,25 +306,16 @@ void merge (char **listArray, int first, int middle, int last, int (*compar)(con
     int sizeList2 = last - middle;
     char **sortArray, **sortArray2;
 
-    /*printf ("sizeleft: %d\n", sizeList);
-    printf ("sizeRight: %d\n", sizeList2);*/
-
     sortArray = malloc (sizeof (char *) * (sizeList + 1));
     sortArray2 = malloc (sizeof (char *) * (sizeList2 + 1));
 
-    /*printf ("entered merge\n");*/
-
-    /*printf ("1st array:\n");*/
     for (i = 0; i < sizeList; i++) {
         sortArray[i] = malloc (sizeof (listArray[first + i]));
         sortArray[i] = listArray[first + i];
-        /*printf ("%d: %s\n", i+1, sortArray[i]);*/
     }
-    /*printf ("2nd array:\n");*/
     for (j = 0; j < sizeList2; j++) {
         sortArray2[j] = malloc (sizeof (listArray[middle + 1 + j]));
         sortArray2[j] = listArray[middle + 1 + j];
-        /*printf ("%d: %s\n", i+1, sortArray2[j]);*/
     }
 
     i = 0;
@@ -464,7 +350,6 @@ void mergeSort (char** listArray, int first, int last, int (*compar)(const void 
 
     int middle = 0;
     middle = (first + last) / 2;
-    /*printf ("entered mergeSort\n");*/
 
     if (first < last) {
         mergeSort (listArray, first, middle, compar);
@@ -488,26 +373,20 @@ void ftext (FILE *fp, struct node_struct *list) {
     /*Each line has at most 80 chars (excluding newline), insert newline before 80 count is hit*/
     /*Record strlen of line (add onto each) if hits over 80, print in the current line and then set new one*/
     while (list != NULL) {
-        /*printf ("length: %d\n", lineLength);*/
         tempWord = list->data;
         lineLength += strlen(tempWord);
-        /*printf ("%s\n", tempWord);*/
         if (next != NULL) {
             tempNext = next->data;
         }
         if (lineLength > 80 || strcmp (tempWord, "\r") == 0) {
-            /*printf ("finish line\n");*/
             fprintf (fp, "%s\n", tempLine);
             lineLength  = 0;
             memset(tempLine, 0, strlen(tempLine));
         }
         else {
-            /*printf ("continue recording\n");*/
             if (firstWord != 1 && next != NULL) {
-                /*printf ("not first word %d\n", lineLength);*/
                 if ((strcmp (tempWord, ",") == 0 || strcmp(tempWord, ";") == 0 || strcmp (tempWord, ".") == 0 ||
                     strcmp (tempWord, "\"") == 0) && ((strcmp (next->data, "\"") != 0) && (strcmp (next->data, "--") != 0))) {
-                    /*printf ("space required\n");*/
                     spaceBool = 1;
                 }
                 else if ((isalpha(tempWord[0]) != 0 || isdigit(tempWord[0]) != 0) && (isalpha(tempNext[0]) != 0 || isdigit(tempNext[0]) != 0)) {
@@ -524,10 +403,8 @@ void ftext (FILE *fp, struct node_struct *list) {
         spaceBool = 0;
         tempWord = "";
         list = list->next;
-        /*printf ("next:%p\n", (void *) list);*/
         if (next != NULL) {
             next = list->next;
-            /*printf ("nextofnext:%p\n", (void *) next);*/
         }
     }
     fprintf (fp, "%s\n", tempLine);
