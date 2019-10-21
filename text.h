@@ -24,3 +24,6 @@ int isTypeTwo (char checkSymbol);
 void print_list (struct node_struct *head, int type);
 int strcmpvoid (const void *a, const void *b);
 int strcmpsort (const void *a, const void *b);
+
+void merge (char** listArray, int first, int middle, int last, int (*compar)(const void *, const void *));
+void mergeSort (char** listArray, int first, int last, int (*compar)(const void *, const void *));

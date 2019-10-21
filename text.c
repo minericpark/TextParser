@@ -13,7 +13,7 @@ int main() {
     FILE *fp, *fp2;
     struct node_struct *head, *sHead, *test1, *test2, *cHead, *test3, *sortHead;
 
-    if ((fp = fopen("test.txt", "r+")) == NULL) {
+    if ((fp = fopen("test2.txt", "r+")) == NULL) {
         printf ("File could not be opened");
     }
     if ((fp2 = fopen("ftext.txt", "w+")) == NULL) {
@@ -27,6 +27,7 @@ int main() {
     ftext(fp2, head);
     printf ("\nsort test:\n");
     sortHead = sort(head, strcmpsort);
+    print_list(sortHead, 0);
     /*
     remove_repeats(head, strcmpvoid);
     printf ("\nremove_repeat test:\n");
@@ -351,8 +352,10 @@ struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, 
     struct node_struct *temp = list;
     int listLength = length(list);
     int i = 0;
-    char* listArray[listLength];
-    struct node_struct **ptr, *head, *firstHalf, *secondHalf;
+    char **listArray;
+    struct node_struct **ptr, *head;
+
+    listArray = malloc (sizeof(char *) * listLength);
 
     if (list == NULL || list->next == NULL) {
         printf ("Linked list either empty or only one node exists.\n");
@@ -360,43 +363,105 @@ struct node_struct *sort (struct node_struct *list, int (*compar)(const void *, 
 
     /*Create array from linked list*/
     while (temp != NULL) {
+        listArray[i] = malloc (sizeof (char *) * strlen(temp->data));
         listArray[i] = temp->data;
         temp = temp->next;
         i++;
     }
+    /*
+    for (i = 0; i < listLength; i++) {
+        printf ("%d: %s\n", i+1, listArray[i]);
+    }*/
+
+    /*printf ("starting merge\n");*/
+    mergeSort(listArray, 0, listLength - 1, strcmpsort);
+    /*
     for (i = 0; i < listLength; i++) {
         printf ("%d: %s\n", i+1, listArray[i]);
     }
-
+    */
     /*Create list*/
     ptr = &head;
-    while (temp != NULL) { /*Run through entire list given*/
-        *ptr = malloc (sizeof(struct node_struct));
-        (*ptr)->data = &(*temp->data); /*Copy data pointer*/
+    for (i = 0; i < listLength; i++) {
+        *ptr = malloc(sizeof(struct node_struct));
+        (*ptr)->data = malloc(strlen(listArray[i]) + 1);
+        strcpy((*ptr)->data, listArray[i]);
         ptr = &((*ptr)->next);
-        temp = temp->next;
     }
     *ptr = NULL;
 
     return head;
 }
 
-void merge (char* listArray[], int firstOne, int lastOne, int firstTwo, int lastTwo) {
+/*Merge helper function that organizes and merges arranged lists*/
+void merge (char **listArray, int first, int middle, int last, int (*compar)(const void *, const void *)) {
 
-    int i, j, k;
+    int i;
+    int j;
+    int k;
+    int sizeList = middle - first + 1;
+    int sizeList2 = last - middle;
+    char **sortArray, **sortArray2;
 
-    
+    /*printf ("sizeleft: %d\n", sizeList);
+    printf ("sizeRight: %d\n", sizeList2);*/
+
+    sortArray = malloc (sizeof (char *) * (sizeList + 1));
+    sortArray2 = malloc (sizeof (char *) * (sizeList2 + 1));
+
+    /*printf ("entered merge\n");*/
+
+    /*printf ("1st array:\n");*/
+    for (i = 0; i < sizeList; i++) {
+        sortArray[i] = malloc (sizeof (listArray[first + i]));
+        sortArray[i] = listArray[first + i];
+        /*printf ("%d: %s\n", i+1, sortArray[i]);*/
+    }
+    /*printf ("2nd array:\n");*/
+    for (j = 0; j < sizeList2; j++) {
+        sortArray2[j] = malloc (sizeof (listArray[middle + 1 + j]));
+        sortArray2[j] = listArray[middle + 1 + j];
+        /*printf ("%d: %s\n", i+1, sortArray2[j]);*/
+    }
+
+    i = 0;
+    j = 0;
+    k = first;
+
+    while (i < sizeList && j < sizeList2) {
+        if (compar(sortArray[i], sortArray2[j]) <= 0) {
+            listArray[k] = sortArray[i];
+            i++;
+        }
+        else {
+            listArray[k] = sortArray2[j];
+            j++;
+        }
+        k++;
+    }
+    while (i < sizeList) {
+        listArray[k] = sortArray[i];
+        i++;
+        k++;
+    }
+    while (j < sizeList2) {
+        listArray[k] = sortArray2[j];
+        j++;
+        k++;
+    }
 }
 
-void mergeSort (char* listArray[], int first, int last) {
+/*Mergesort function utilizes base algorithm to sort given list with index first, last, and compare function*/
+void mergeSort (char** listArray, int first, int last, int (*compar)(const void *, const void *)) {
 
-    int middle;
+    int middle = 0;
+    middle = (first + last) / 2;
+    /*printf ("entered mergeSort\n");*/
 
     if (first < last) {
-        middle = (first + last) / 2;
-        mergeSort (listArray, first, middle);
-        mergeSort (listArray, middle + 1, last);
-        merge (listArray, first, middle + 1, middle, last);
+        mergeSort (listArray, first, middle, compar);
+        mergeSort (listArray, middle + 1, last, compar);
+        merge (listArray, first, middle, last, compar);
     }
 }
 
@@ -478,7 +543,7 @@ int length (struct node_struct *list) {
 /*Function frees the linked list provided by list: only nodes if free_data is equal
  * to 0, or everything (including data) if free_data is equal to anything elsewise */
 void free_list (struct node_struct *list, int free_data) {
-    struct node_struct *temp, *temp2;
+    struct node_struct *temp;
 
     if (free_data != 0) { /*Checks if free_data is 0 or not*/
         /*Free data*/
